@@ -1,0 +1,43 @@
+name: Actualizar Tasa BCV
+
+on:
+  schedule:
+    # Corre de lunes a viernes (1-5) a las 10:00 UTC (6:00 AM hora de Venezuela)
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch: # Permite ejecutar el script manualmente desde la interfaz de GitHub cuando quieras
+
+permissions:
+  contents: write # Permiso crucial para que el bot pueda subir el archivo json al repo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Instalar dependencias
+      run: npm install
+
+    - name: Ejecutar Extractor
+      run: npm start
+
+    - name: Confirmar y Guardar Cambios (Push)
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        # Verificar si tasa.json cambió para evitar commits vacíos
+        if git status --porcelain | grep -q "tasa.json"; then
+          git add tasa.json
+          git commit -m "Actualización automática: Tasa BCV 6:00 AM"
+          git push
+        else
+          echo "La tasa no ha cambiado desde la última verificación."
+        fi
