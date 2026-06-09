@@ -2,9 +2,17 @@ name: Actualizar Tasa BCV
 
 on:
   schedule:
-    # Corre de lunes a viernes (1-5) a las 10:00 UTC (6:00 AM hora de Venezuela)
     - cron: '0 10 * * 1-5'
-  workflow_dispatch: # Permite ejecutar el script manualmente desde la interfaz de GitHub cuando quieras
+  workflow_dispatch:
+    inputs:
+      usd:
+        description: 'Tasa USD manual (si el BCV esta caido)'
+        required: false
+        type: number
+      eur:
+        description: 'Tasa EUR manual (si el BCV esta caido)'
+        required: false
+        type: number
 
 permissions:
   contents: write # Permiso crucial para que el bot pueda subir el archivo json al repo
@@ -31,6 +39,9 @@ jobs:
 
     - name: Ejecutar Extractor
       run: npm start
+      env:
+        MANUAL_USD: ${{ inputs.usd || '' }}
+        MANUAL_EUR: ${{ inputs.eur || '' }}
 
     - name: Confirmar y Guardar Cambios (Push)
       run: |
