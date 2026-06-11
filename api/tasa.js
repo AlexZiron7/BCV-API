@@ -4,23 +4,31 @@ const axios = require('axios');
 const BLOB_PATH = 'tasa.json';
 const FALLBACK_URL = process.env.FALLBACK_RAW_URL;
 
+async function streamToString(stream) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let text = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    text += decoder.decode(value, { stream: true });
+  }
+  text += decoder.decode();
+  return text;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Método no permitido' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Método no permitido' });
 
   try {
-    const blob = await get(BLOB_PATH, { access: 'private' });
-    if (blob && typeof blob.text === 'function') {
-      const text = await blob.text();
+    const result = await get(BLOB_PATH, { access: 'private' });
+    if (result && result.stream) {
+      const text = await streamToString(result.stream);
       if (text) {
         const data = JSON.parse(text);
         res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
@@ -29,7 +37,7 @@ module.exports = async (req, res) => {
       }
     }
   } catch (e) {
-    console.error('Blob error:', e.constructor?.name, e.message);
+    console.error('Blob error:', e.message);
   }
 
   if (FALLBACK_URL) {
@@ -43,6 +51,5 @@ module.exports = async (req, res) => {
     }
   }
 
-  res.setHeader('Cache-Control', 'no-cache');
   return res.status(503).json({ error: 'No hay datos disponibles' });
 };
