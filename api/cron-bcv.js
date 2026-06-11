@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
 
   try {
     await put(BLOB_PATH, JSON.stringify(resultado, null, 2), {
-      access: 'public',
       addRandomSuffix: false
     });
     console.log('Tasa guardada en Vercel Blob:', resultado);
