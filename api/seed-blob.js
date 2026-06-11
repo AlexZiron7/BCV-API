@@ -9,12 +9,14 @@ module.exports = async (req, res) => {
     const response = await axios.get(fallback, { timeout: 5000 });
     const data = response.data;
 
-    await put('tasa.json', JSON.stringify(data, null, 2), {
+    const result = await put('tasa.json', JSON.stringify(data, null, 2), {
       access: 'private',
       addRandomSuffix: false
     });
 
-    return res.status(200).json({ success: true, message: 'Blob inicializado', data });
+    console.log('Blob URL:', result.url);
+
+    return res.status(200).json({ success: true, message: 'Blob inicializado', url: result.url, data });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
