@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (e) {
-    console.log('No se pudo leer de Blob, usando fallback:', e.message);
+    console.error('Error al leer de Blob:', e.message, e.stack?.substring(0, 500));
   }
 
   if (FALLBACK_URL) {
