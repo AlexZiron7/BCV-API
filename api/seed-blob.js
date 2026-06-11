@@ -1,35 +1,36 @@
-const { put, get, head } = require('@vercel/blob');
+const { put, get, head, list } = require('@vercel/blob');
 const axios = require('axios');
-
-function hasMethod(obj, name) {
-  return obj && typeof obj[name] === 'function';
-}
 
 module.exports = async (req, res) => {
   try {
     if (req.query.test === 'get') {
       try {
         const blob = await get('tasa.json', { access: 'private' });
-        if (!blob) return res.json({ exists: false });
         return res.json({
-          exists: true,
-          type: typeof blob,
-          hasText: hasMethod(blob, 'text'),
-          hasJson: hasMethod(blob, 'json'),
-          hasBody: hasMethod(blob, 'body'),
-          constructor: blob.constructor?.name,
-          keys: Object.keys(blob).slice(0, 10)
+          exists: !!blob,
+          keys: Object.keys(blob),
+          statusCode: blob.statusCode,
+          blobInfo: blob.blob,
+          hasStream: !!blob.stream
         });
       } catch (e) {
-        return res.status(500).json({ error: e.constructor?.name + ': ' + e.message, stack: e.stack?.substring(0, 500) });
+        return res.status(500).json({ error: e.constructor?.name + ': ' + e.message });
       }
     }
 
     if (req.query.test === 'gettext') {
       try {
         const blob = await get('tasa.json', { access: 'private' });
-        const text = await blob.text();
-        return res.json({ text: text?.substring(0, 200), length: text?.length });
+        const reader = blob.stream.getReader();
+        const decoder = new TextDecoder();
+        let text = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          text += decoder.decode(value, { stream: true });
+        }
+        text += decoder.decode();
+        return res.json({ text: text?.substring(0, 300), length: text?.length });
       } catch (e) {
         return res.status(500).json({ error: e.constructor?.name + ': ' + e.message, stack: e.stack?.substring(0, 500) });
       }
