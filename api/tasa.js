@@ -19,15 +19,17 @@ module.exports = async (req, res) => {
 
   try {
     const blob = await get(BLOB_PATH, { access: 'private' });
-    if (blob) {
+    if (blob && typeof blob.text === 'function') {
       const text = await blob.text();
-      const data = JSON.parse(text);
-      res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
-      res.setHeader('X-Cache-Source', 'vercel-blob');
-      return res.status(200).json(data);
+      if (text) {
+        const data = JSON.parse(text);
+        res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
+        res.setHeader('X-Cache-Source', 'vercel-blob');
+        return res.status(200).json(data);
+      }
     }
   } catch (e) {
-    console.error('Error al leer de Blob:', e.message, e.stack?.substring(0, 500));
+    console.error('Blob error:', e.constructor?.name, e.message);
   }
 
   if (FALLBACK_URL) {
@@ -37,7 +39,7 @@ module.exports = async (req, res) => {
       res.setHeader('X-Cache-Source', 'github-raw');
       return res.status(200).json(response.data);
     } catch (e) {
-      console.error('Fallback a GitHub RAW falló:', e.message);
+      console.error('Fallback error:', e.message);
     }
   }
 
