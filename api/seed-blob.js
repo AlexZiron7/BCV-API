@@ -10,6 +10,7 @@ module.exports = async (req, res) => {
     const data = response.data;
 
     await put('tasa.json', JSON.stringify(data, null, 2), {
+      access: 'private',
       addRandomSuffix: false
     });
 
