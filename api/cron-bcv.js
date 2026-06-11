@@ -5,7 +5,7 @@ const BLOB_PATH = 'tasa.json';
 
 async function cargarAnteriorDesdeBlob() {
   try {
-    const blob = await get(BLOB_PATH);
+    const blob = await get(BLOB_PATH, { access: 'private' });
     if (blob) {
       const text = await blob.text();
       return JSON.parse(text);

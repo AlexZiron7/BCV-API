@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const blob = await get(BLOB_PATH);
+    const blob = await get(BLOB_PATH, { access: 'private' });
     if (blob) {
       const text = await blob.text();
       const data = JSON.parse(text);
