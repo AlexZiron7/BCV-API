@@ -1,19 +1,41 @@
-const { put, get } = require('@vercel/blob');
+const { put, get, head } = require('@vercel/blob');
 const axios = require('axios');
+
+function hasMethod(obj, name) {
+  return obj && typeof obj[name] === 'function';
+}
 
 module.exports = async (req, res) => {
   try {
-    const fallback = process.env.FALLBACK_RAW_URL;
-
     if (req.query.test === 'get') {
       try {
         const blob = await get('tasa.json', { access: 'private' });
-        return res.json({ exists: !!blob, type: typeof blob });
+        if (!blob) return res.json({ exists: false });
+        return res.json({
+          exists: true,
+          type: typeof blob,
+          hasText: hasMethod(blob, 'text'),
+          hasJson: hasMethod(blob, 'json'),
+          hasBody: hasMethod(blob, 'body'),
+          constructor: blob.constructor?.name,
+          keys: Object.keys(blob).slice(0, 10)
+        });
       } catch (e) {
-        return res.status(500).json({ error: 'get failed: ' + e.message, stack: e.stack?.substring(0, 300) });
+        return res.status(500).json({ error: e.constructor?.name + ': ' + e.message, stack: e.stack?.substring(0, 500) });
       }
     }
 
+    if (req.query.test === 'gettext') {
+      try {
+        const blob = await get('tasa.json', { access: 'private' });
+        const text = await blob.text();
+        return res.json({ text: text?.substring(0, 200), length: text?.length });
+      } catch (e) {
+        return res.status(500).json({ error: e.constructor?.name + ': ' + e.message, stack: e.stack?.substring(0, 500) });
+      }
+    }
+
+    const fallback = process.env.FALLBACK_RAW_URL;
     if (!fallback) return res.status(400).json({ error: 'No FALLBACK_RAW_URL' });
 
     const response = await axios.get(fallback, { timeout: 5000 });
