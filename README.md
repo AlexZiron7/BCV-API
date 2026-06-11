@@ -25,7 +25,8 @@ Respuesta:
 | Mecanismo | Schedule (VET) | Descripción |
 |-----------|----------------|-------------|
 | GitHub Actions | 6:00 AM (lun–vie) | Scrapea BCV y commitea `tasa.json` al repo |
-| Vercel Cron | 10:00 PM (diario) | Scrapea BCV y guarda en Vercel Blob |
+| Vercel Cron #1 | 5:00 PM (diario) | Captura la tasa nueva del BCV y guarda en Blob |
+| Vercel Cron #2 | 10:00 PM (diario) | Backup nocturno en Blob |
 | Endpoint `/api/tasa` | — | Sirve desde Blob con fallback a GitHub RAW |
 
 ## Despliegue manual
