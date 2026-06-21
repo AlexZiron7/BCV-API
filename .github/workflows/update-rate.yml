@@ -43,6 +43,8 @@ jobs:
       env:
         MANUAL_USD: ${{ inputs.usd || '' }}
         MANUAL_EUR: ${{ inputs.eur || '' }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
     - name: Confirmar y Guardar Cambios (Push)
       run: |
