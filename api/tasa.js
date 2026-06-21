@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
           const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
           const isStale = data.stale || !updatedAt || (Date.now() - updatedAt.getTime() > 16 * 60 * 60 * 1000);
           if (!isStale) {
-            res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
             res.setHeader('X-Cache-Source', 'vercel-blob');
             return res.status(200).json(data);
           } else {
@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
   if (FALLBACK_URL) {
     try {
       const response = await axios.get(FALLBACK_URL, { timeout: 5000 });
-      res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
       res.setHeader('X-Cache-Source', 'github-raw');
       return res.status(200).json(response.data);
     } catch (e) {
