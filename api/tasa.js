@@ -34,9 +34,15 @@ module.exports = async (req, res) => {
         const text = await streamToString(result.stream);
         if (text) {
           const data = JSON.parse(text);
-          res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
-          res.setHeader('X-Cache-Source', 'vercel-blob');
-          return res.status(200).json(data);
+          const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
+          const isStale = !updatedAt || (Date.now() - updatedAt.getTime() > 24 * 60 * 60 * 1000);
+          if (!isStale) {
+            res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
+            res.setHeader('X-Cache-Source', 'vercel-blob');
+            return res.status(200).json(data);
+          } else {
+            console.log('Blob data is stale, falling back to GitHub raw URL...');
+          }
         }
       }
     }
