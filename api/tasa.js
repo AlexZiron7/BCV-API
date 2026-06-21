@@ -1,4 +1,4 @@
-const { get } = require('@vercel/blob');
+const { get, list } = require('@vercel/blob');
 const axios = require('axios');
 
 const BLOB_PATH = 'tasa.json';
@@ -26,14 +26,18 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Método no permitido' });
 
   try {
-    const result = await get(BLOB_PATH, { access: 'private' });
-    if (result && result.stream) {
-      const text = await streamToString(result.stream);
-      if (text) {
-        const data = JSON.parse(text);
-        res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
-        res.setHeader('X-Cache-Source', 'vercel-blob');
-        return res.status(200).json(data);
+    const { blobs } = await list({ limit: 10 });
+    const tasaBlob = blobs.find(b => b.pathname === BLOB_PATH);
+    if (tasaBlob) {
+      const result = await get(tasaBlob.url, { access: 'private' });
+      if (result && result.stream) {
+        const text = await streamToString(result.stream);
+        if (text) {
+          const data = JSON.parse(text);
+          res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
+          res.setHeader('X-Cache-Source', 'vercel-blob');
+          return res.status(200).json(data);
+        }
       }
     }
   } catch (e) {

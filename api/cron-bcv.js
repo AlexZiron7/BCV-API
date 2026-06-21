@@ -1,14 +1,18 @@
 const { obtenerTasaBCV, streamToString } = require('../lib/scraper');
-const { put, get } = require('@vercel/blob');
+const { put, get, list } = require('@vercel/blob');
 
 const BLOB_PATH = 'tasa.json';
 
 async function cargarAnteriorDesdeBlob() {
   try {
-    const result = await get(BLOB_PATH, { access: 'private' });
-    if (result?.stream) {
-      const text = await streamToString(result.stream);
-      return JSON.parse(text);
+    const { blobs } = await list({ limit: 10 });
+    const tasaBlob = blobs.find(b => b.pathname === BLOB_PATH);
+    if (tasaBlob) {
+      const result = await get(tasaBlob.url, { access: 'private' });
+      if (result?.stream) {
+        const text = await streamToString(result.stream);
+        return JSON.parse(text);
+      }
     }
   } catch (e) {
     console.log('No hay tasa anterior en Blob o error al leer:', e.message);
