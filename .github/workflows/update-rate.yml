@@ -2,8 +2,8 @@ name: Actualizar Tasa BCV
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # 10:00 PM VET
-    - cron: '0 8 * * *'  # 4:00 AM VET
+    - cron: '0 20 * * *'  # 4:00 PM VET — Backup vespertino
+    - cron: '0 8 * * *'   # 4:00 AM VET — Backup madrugada
   workflow_dispatch:
     inputs:
       usd:
@@ -52,7 +52,7 @@ jobs:
         # Verificar si tasa.json cambió para evitar commits vacíos
         if git status --porcelain | grep -q "tasa.json"; then
           git add tasa.json
-          git commit -m "Actualización automática: Tasa BCV 6:00 AM"
+          git commit -m "Actualización automática: Tasa BCV"
           git push
         else
           echo "La tasa no ha cambiado desde la última verificación."
