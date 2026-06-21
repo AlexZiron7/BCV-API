@@ -41,3 +41,23 @@ describe('extraerValor', () => {
     assert.strictEqual(valor, 57.75);
   });
 });
+
+describe('obtenerTasaBCV', () => {
+  it('debe retornar stale y conservar el updated_at anterior si el scrape falla', async () => {
+    const { obtenerTasaBCV } = require('../lib/scraper');
+    const anterior = {
+      bcv: { usd: 600.0, eur: 680.0 },
+      updated_at: '2026-06-11T12:00:00.000Z',
+      stale: false
+    };
+
+    const resultado = await obtenerTasaBCV({
+      anterior,
+      timeout: 1
+    });
+
+    assert.strictEqual(resultado.stale, true);
+    assert.strictEqual(resultado.updated_at, '2026-06-11T12:00:00.000Z');
+    assert.strictEqual(resultado.bcv.usd, 600.0);
+  });
+});

@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
         if (text) {
           const data = JSON.parse(text);
           const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
-          const isStale = !updatedAt || (Date.now() - updatedAt.getTime() > 24 * 60 * 60 * 1000);
+          const isStale = data.stale || !updatedAt || (Date.now() - updatedAt.getTime() > 16 * 60 * 60 * 1000);
           if (!isStale) {
             res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=120');
             res.setHeader('X-Cache-Source', 'vercel-blob');
